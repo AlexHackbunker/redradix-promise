@@ -176,6 +176,32 @@ describe("Then", function() {
 
 	});
 
+	it("should fall error if block doesn´t capture error", function() {
+
+		var promiseThen1ReturnValue, promiseThen2ReturnValue, promiseThen3ReturnValue;
+
+		promise.then( function() {
+			console.log("Aquí no llego" );
+			promiseThen1ReturnValue = 'Aquí no llego';
+		}).then( function() {
+			console.log("Aquí tampoco");
+			promiseThen2ReturnValue = 'Aquí tampoco';
+		}).then( null, function(e) {
+			console.log("El error ha caido hasta aquí", e.message);
+			promiseThen3ReturnValue = 'El error ha caido hasta aquí';
+		});
+
+		function Error(message) {
+			this.message = message;
+		}
+
+		promise.reject(new Error('Imparable'));
+		expect(promiseThen1ReturnValue).toBeUndefined();
+		expect(promiseThen2ReturnValue).toBeUndefined();
+		expect(promiseThen3ReturnValue).toBe('El error ha caido hasta aquí');
+
+	});
+
 });
 
 describe("Resolve", function() {

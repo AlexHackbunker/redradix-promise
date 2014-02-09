@@ -4,19 +4,18 @@ var Promise = function() {
 	args = [],
 	state,
 	value,
-	errorCallbacks=[];
+	errorCallbacks=[]
+	thrownError = false;
 
 	self.then = function(callback, errorCallback) {
 
-		if (errorCallback !== undefined)  {
-			errorCallbacks.push(errorCallback);
+		if (state == 'initialized') {
+			value = callback.apply(this,args);
 		} else {
-			if (state == 'initialized') {
-				value = callback.apply(this,args);
-			} else {
-				callbacks.push(callback);
-			}
+			errorCallbacks.push(errorCallback);
+			callbacks.push(callback);
 		}
+
 		return self;
 	};
 
@@ -41,11 +40,15 @@ var Promise = function() {
 	self.reject = function(errorFn) {
 
 		for (var i = 0; i < errorCallbacks.length; i++) {
-			errorCallbacks[i].apply(this, arguments);
-		}
 
-			for (var i = 0; i < callbacks.length; i++) {
-			callbacks[i].apply(this, arguments);
+			if ( errorCallbacks[i] === undefined ) {
+				if (thrownError) {
+					callbacks[i].apply(this, arguments);
+				}
+			} else {
+				errorCallbacks[i].apply(this, arguments);
+				thrownError = true;
+			}
 		}
 
 	};
