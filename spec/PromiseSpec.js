@@ -27,6 +27,9 @@ describe("Then", function() {
 	beforeEach(function() {
 		promise = new Promise();
 
+		function Error(message) {
+			this.message = message;
+		}
 	});
 
 	it("should be able to receive a callback ", function() {
@@ -142,10 +145,6 @@ describe("Then", function() {
 			promiseThen2ReturnValue = 'Todo OK';
 		});
 
-		function Error(message) {
-			this.message = message;
-		}
-
 		promise.reject(new Error('La frustracion'));
 		expect(promiseThen1ReturnValue).toEqual('La frustracion');
 		expect(promiseThen2ReturnValue).toEqual('Todo OK');
@@ -166,9 +165,7 @@ describe("Then", function() {
 			promiseThen2ReturnValue = 'Todo OK';
 		});
 
-		function Error(message) {
-			this.message = message;
-		}
+
 
 		promise.reject(new Error('La frustracion'));
 		expect(promiseThen1ReturnValue).toEqual('La frustracion');
@@ -176,31 +173,27 @@ describe("Then", function() {
 
 	});
 
-	it("should fall error if block doesn´t capture error", function() {
+	it("should reject the promise return if a block throws an exception", function() {
 
-		var promiseThen1ReturnValue, promiseThen2ReturnValue, promiseThen3ReturnValue;
+		var errorMessage;
 
-		promise.then( function() {
-			console.log("Aquí no llego" );
-			promiseThen1ReturnValue = 'Aquí no llego';
-		}).then( function() {
-			console.log("Aquí tampoco");
-			promiseThen2ReturnValue = 'Aquí tampoco';
-		}).then( null, function(e) {
-			console.log("El error ha caido hasta aquí", e.message);
-			promiseThen3ReturnValue = 'El error ha caido hasta aquí';
+		promise.then(function() {
+			console.log('Esto sale por pantalla');
+		})
+		.then(function() {
+			throw new Error("Oh my!");
+		})
+		.then(null, function(e) {
+			console.log("Capturo el error:", e.message);
+			errorMessage = e.message;
 		});
 
-		function Error(message) {
-			this.message = message;
-		}
+		promise.resolve(42);
 
-		promise.reject(new Error('Imparable'));
-		expect(promiseThen1ReturnValue).toBeUndefined();
-		expect(promiseThen2ReturnValue).toBeUndefined();
-		expect(promiseThen3ReturnValue).toBe('El error ha caido hasta aquí');
+		expect(errorMessage).toEqual('Oh my!');
 
 	});
+
 
 });
 
@@ -275,6 +268,28 @@ describe("Reject", function() {
 
 		promise.reject(new MyError('Error'));
 		expect(rejectCallError).toEqual('Error');
+
+	});
+
+	it("should fall error if block doesn´t capture error", function() {
+
+		var promiseThen1ReturnValue, promiseThen2ReturnValue, promiseThen3ReturnValue;
+
+		promise.then( function() {
+			console.log("Aquí no llego" );
+			promiseThen1ReturnValue = 'Aquí no llego';
+		}).then( function() {
+			console.log("Aquí tampoco");
+			promiseThen2ReturnValue = 'Aquí tampoco';
+		}).then( null, function(e) {
+			console.log("El error ha caido hasta aquí", e.message);
+			promiseThen3ReturnValue = 'El error ha caido hasta aquí';
+		});
+
+		promise.reject(new Error('Imparable'));
+		expect(promiseThen1ReturnValue).toBeUndefined();
+		expect(promiseThen2ReturnValue).toBeUndefined();
+		expect(promiseThen3ReturnValue).toBe('El error ha caido hasta aquí');
 
 	});
 

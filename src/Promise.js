@@ -4,8 +4,9 @@ var Promise = function() {
 	args = [],
 	state,
 	value,
-	errorCallbacks=[]
-	thrownError = false;
+	errorCallbacks= [],
+	thrownError = false,
+	blockError;
 
 	self.then = function(callback, errorCallback) {
 
@@ -26,14 +27,24 @@ var Promise = function() {
 	 	args  = [].slice.call(arguments);
 	 	state = 'initialized';
 
-		for (i = 0; i < callbacks.length; i++ ) {
-			if ( value !== undefined ) {
-				value = callbacks[i].call(this,value);
-			} else {
-				value = callbacks[i].apply(this,args);
+		for (var i = 0; i < callbacks.length; i++ ) {
+
+			if ( blockError !== undefined) {
+				errorCallbacks[i].call(this, blockError);
 			}
 
-		}
+			try {
+				if ( value !== undefined ) {
+					value = callbacks[i].call(this,value);
+				} else {
+					value = callbacks[i].apply(this,args);
+				}
+			} catch(e) {
+				value = undefined;
+				blockError = e;
+			}
+
+		} // for
 		return value;
 	};
 
