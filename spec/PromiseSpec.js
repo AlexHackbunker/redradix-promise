@@ -194,6 +194,34 @@ describe("Then", function() {
 
 	});
 
+	it("should reject the promise and fall the error if a block throws an exception", function() {
+
+		var showThen1, showThen2 = true;
+
+		promise.then(function() {
+			console.log('NO soy saltado');
+			showThen1 = true;
+		})
+		.then(function() {
+			throw new Error("Oh my!");
+		})
+		.then(function() {
+			console.log('soy saltado');
+			showThen2 = false;
+		})
+		.then(null, function(e) {
+			console.log("Capturo el error:", e.message);
+			errorMessage = e.message;
+		});
+
+		promise.resolve(42);
+
+		expect(showThen1).toBe(true);
+		expect(showThen2).toBe(true);
+		expect(errorMessage).toEqual('Oh my!');
+
+	});
+
 
 });
 

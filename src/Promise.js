@@ -29,20 +29,26 @@ var Promise = function() {
 
 		for (var i = 0; i < callbacks.length; i++ ) {
 
-			if ( blockError !== undefined) {
-				errorCallbacks[i].call(this, blockError);
-			}
+			if ( blockError !== undefined ) {
 
-			try {
-				if ( value !== undefined ) {
-					value = callbacks[i].call(this,value);
-				} else {
-					value = callbacks[i].apply(this,args);
+				if (errorCallbacks[i] !== undefined) {
+					errorCallbacks[i].call(this, blockError);
 				}
-			} catch(e) {
-				value = undefined;
-				blockError = e;
-			}
+
+			} else  {
+
+				try {
+					if ( value !== undefined ) {
+						value = callbacks[i].call(this,value);
+					} else {
+						value = callbacks[i].apply(this,args);
+					}
+				} catch(e) {
+					value = undefined;
+					blockError = e;
+				}
+
+			} // else
 
 		} // for
 		return value;
